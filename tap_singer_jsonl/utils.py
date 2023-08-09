@@ -7,6 +7,8 @@ import ntpath
 import sys
 from pathlib import Path
 
+from collections.abc import Iterator
+
 from singer_sdk._singerlib import Catalog
 from smart_open import s3
 
@@ -15,7 +17,7 @@ logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_file_lines(source, config):
+def get_file_lines(source, config) -> Iterator[tuple[str, int, str]]:
     if source == "local":
         yield from get_local_file_lines(config)
     elif source == "s3":
@@ -25,19 +27,23 @@ def get_file_lines(source, config):
 
 
 def get_local_file_lines(config):
-    paths = get_local_file_paths(config)
+    paths: list[Path] = get_local_file_paths(config)
+    file_path: Path
     for file_path in paths:
         logger.info(f"Reading file: {file_path}")
+        count: int
+        line: str
         for count, line in enumerate(file_path.open("r", encoding="utf-8")):
             file_name = ntpath.basename(str(file_path))
             row_number = count + 1
-            yield (file_name, row_number, line)
+            yield file_name, row_number, line
 
 
-def get_local_file_paths(config):
-    paths = config.get("paths", [])
-    recursive = config.get("recursive", False)
+def get_local_file_paths(config) -> list[Path]:
+    paths: list[Path] = config.get("paths", [])
+    recursive: bool = config.get("recursive", False)
     if "folders" in config:
+        folder: str
         for folder in config["folders"]:
             folder_path = Path(folder)
             if folder_path.is_dir():
