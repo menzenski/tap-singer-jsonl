@@ -40,7 +40,7 @@ def get_local_file_lines(config):
 
 
 def get_local_file_paths(config) -> list[Path]:
-    paths: list[Path] = config.get("paths", [])
+    paths: list[Path] = [Path(p) for p in config.get("paths", [])]
     recursive: bool = config.get("recursive", False)
     if "folders" in config:
         folder: str
