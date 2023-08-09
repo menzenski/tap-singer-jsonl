@@ -84,6 +84,7 @@ def extract_schema_messages(lines):
             logger.error("Unable to parse:\n%s", line, exc_info=exc)
             raise
 
+        logger.info(f"line_dict: {line_dict}")
         if line_dict["type"] == "SCHEMA":
             schema_messages.append(line_dict)
     return schema_messages
